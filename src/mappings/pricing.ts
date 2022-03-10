@@ -1,8 +1,8 @@
 import { Address, Bytes, BigInt, BigDecimal } from '@graphprotocol/graph-ts';
 import { Pool, TokenPrice, Balancer, PoolHistoricalLiquidity, LatestPrice } from '../types/schema';
-import { ZERO_BD, PRICING_ASSETS, USD_STABLE_ASSETS, ONE_BD } from './helpers/constants';
-import { hasVirtualSupply, PoolType } from './helpers/pools';
-import { createPoolSnapshot, getBalancerSnapshot, getToken, getTokenPriceId, loadPoolToken } from './helpers/misc';
+import { PRICING_ASSETS, USD_STABLE_ASSETS } from './helpers/constants';
+import { getBalancerSnapshot, getToken, getTokenPriceId, loadPoolToken } from './helpers/misc';
+import { ZERO_BD } from './helpers/constants';
 
 export function isPricingAsset(asset: Address): boolean {
   for (let i: i32 = 0; i < PRICING_ASSETS.length; i++) {
@@ -17,9 +17,8 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
 
   let tokensList: Bytes[] = pool.tokensList;
   if (tokensList.length < 2) return false;
-  if (hasVirtualSupply(pool) && pool.address == pricingAsset) return false;
 
-  let poolValue: BigDecimal = BigDecimal.fromString('0');
+  let poolValue: BigDecimal = ZERO_BD;
 
   for (let j: i32 = 0; j < tokensList.length; j++) {
     let tokenAddress: Address = Address.fromString(tokensList[j].toHexString());
@@ -36,7 +35,7 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
     // compare any new token price with the last price
     let tokenPriceId = getTokenPriceId(poolId, tokenAddress, pricingAsset, block);
     let tokenPrice = TokenPrice.load(tokenPriceId);
-    let price: BigDecimal;
+    let price: BigDecimal = ZERO_BD;
     let latestPriceId = getLatestPriceId(tokenAddress, pricingAsset);
     let latestPrice = LatestPrice.load(latestPriceId);
 
@@ -46,7 +45,7 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
     // note that we can only meaningfully report liquidity once assets are traded with
     // the pricing asset
     if (tokenPrice) {
-      // value in terms of priceableAsset
+      //value in terms of priceableAsset
       price = tokenPrice.price;
 
       // Possibly update latest price
@@ -56,6 +55,7 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
         latestPrice.pricingAsset = pricingAsset;
       }
       latestPrice.price = price;
+      latestPrice.priceUSD = tokenPrice.priceUSD;
       latestPrice.block = block;
       latestPrice.poolId = poolId;
       latestPrice.save();
@@ -63,27 +63,10 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
       let token = getToken(tokenAddress);
       token.latestPrice = latestPrice.id;
       token.save();
-    } else if (pool.poolType == PoolType.StablePhantom) {
-      // try to estimate token price in terms of pricing asset
-      let pricingAssetInUSD = valueInUSD(ONE_BD, pricingAsset);
-      let currentTokenInUSD = valueInUSD(ONE_BD, tokenAddress);
-
-      if (pricingAssetInUSD.equals(ZERO_BD) || currentTokenInUSD.equals(ZERO_BD)) {
-        continue;
-      }
-
-      price = currentTokenInUSD.div(pricingAssetInUSD);
     }
 
-    // Exclude virtual supply from pool value
-    if (hasVirtualSupply(pool) && pool.address == tokenAddress) {
-      continue;
-    }
-
-    if (price) {
-      let poolTokenValue = price.times(poolTokenQuantity);
-      poolValue = poolValue.plus(poolTokenValue);
-    }
+    let poolTokenValue = price.times(poolTokenQuantity);
+    poolValue = poolValue.plus(poolTokenValue);
   }
 
   let oldPoolLiquidity: BigDecimal = pool.totalLiquidity;
@@ -102,17 +85,16 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
   phl.poolId = poolId;
   phl.pricingAsset = pricingAsset;
   phl.block = block;
+  phl.timestamp = timestamp;
   phl.poolTotalShares = pool.totalShares;
   phl.poolLiquidity = poolValue;
+  phl.poolLiquidityUSD = newPoolLiquidity;
   phl.poolShareValue = pool.totalShares.gt(ZERO_BD) ? poolValue.div(pool.totalShares) : ZERO_BD;
   phl.save();
 
   // Update pool stats
   pool.totalLiquidity = newPoolLiquidity;
   pool.save();
-
-  // Create or update pool daily snapshot
-  createPoolSnapshot(pool, timestamp);
 
   // Update global stats
   let vault = Balancer.load('2') as Balancer;
@@ -143,29 +125,6 @@ export function valueInUSD(value: BigDecimal, pricingAsset: Address): BigDecimal
   }
 
   return usdValue;
-}
-
-export function swapValueInUSD(
-  tokenInAddress: Address,
-  tokenAmountIn: BigDecimal,
-  tokenOutAddress: Address,
-  tokenAmountOut: BigDecimal
-): BigDecimal {
-  let swapValueUSD = ZERO_BD;
-
-  if (isUSDStable(tokenOutAddress)) {
-    swapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
-  } else if (isUSDStable(tokenInAddress)) {
-    swapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
-  } else {
-    let tokenInSwapValueUSD = valueInUSD(tokenAmountIn, tokenInAddress);
-    let tokenOutSwapValueUSD = valueInUSD(tokenAmountOut, tokenOutAddress);
-    let divisor =
-      tokenInSwapValueUSD.gt(ZERO_BD) && tokenOutSwapValueUSD.gt(ZERO_BD) ? BigDecimal.fromString('2') : ONE_BD;
-    swapValueUSD = tokenInSwapValueUSD.plus(tokenOutSwapValueUSD).div(divisor);
-  }
-
-  return swapValueUSD;
 }
 
 function getLatestPriceId(tokenAddress: Address, pricingAsset: Address): string {
