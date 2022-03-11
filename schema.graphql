@@ -48,7 +48,7 @@ type Pool @entity {
   # StablePool Only
   amp: BigInt
 
-  # MetaStablePool and LinearPool Only
+  # MetaStablePool Only
   priceRateProviders: [PriceRateProvider!] @derivedFrom(field: "poolId")
 
   # ConvergentCurvePool (Element) Only
@@ -60,12 +60,14 @@ type Pool @entity {
   # InvestmentPool Only
   managementFee: BigDecimal
 
-  # LinearPool Only
+    # LinearPool Only
   mainIndex: Int
   wrappedIndex: Int
   lowerTarget: BigDecimal
   upperTarget: BigDecimal
 }
+
+
 
 type PoolToken @entity {
   id: ID!
@@ -121,8 +123,8 @@ type GradualWeightUpdate @entity {
   id: ID!
   poolId: Pool!
   scheduledTimestamp: Int!
-  startTimestamp: BigInt!
-  endTimestamp: BigInt!
+  startTimestamp: Int!
+  endTimestamp: Int!
   startWeights: [BigInt!]!
   endWeights: [BigInt!]!
 }
@@ -131,8 +133,8 @@ type AmpUpdate @entity {
   id: ID!
   poolId: Pool!
   scheduledTimestamp: Int!
-  startTimestamp: BigInt!
-  endTimestamp: BigInt!
+  startTimestamp: Int!
+  endTimestamp: Int!
   startAmp: BigInt!
   endAmp: BigInt!
 }
@@ -150,6 +152,7 @@ type Swap @entity {
   userAddress: User!
   timestamp: Int!
   tx: Bytes!
+  valueUSD: BigDecimal!
 }
 
 enum InvestType {
@@ -165,6 +168,7 @@ type JoinExit @entity {
   pool: Pool!
   user: User!
   timestamp: Int!
+  valueUSD: BigDecimal!
   tx: Bytes!
 }
 
@@ -174,6 +178,7 @@ type LatestPrice @entity {
   pricingAsset: Bytes! # address of stable asset
   poolId: Pool! # last pool which set price
   price: BigDecimal! # all the latest prices
+  priceUSD: BigDecimal! # all the latest prices
   block: BigInt! # last block that prices were updated
 }
 
@@ -182,9 +187,11 @@ type PoolHistoricalLiquidity @entity {
   poolId: Pool!
   poolTotalShares: BigDecimal!
   poolLiquidity: BigDecimal! # total value, priced in the stable asset - ie USD
+  poolLiquidityUSD: BigDecimal!
   poolShareValue: BigDecimal!
   pricingAsset: Bytes! # address of stable asset
   block: BigInt!
+  timestamp: Int!
 }
 
 type TokenPrice @entity {
@@ -196,6 +203,7 @@ type TokenPrice @entity {
   price: BigDecimal!
   block: BigInt!
   timestamp: Int!
+  priceUSD: BigDecimal!
 }
 
 type Investment @entity {
@@ -213,8 +221,13 @@ type PoolSnapshot @entity {
   totalShares: BigDecimal!
   swapVolume: BigDecimal!
   swapFees: BigDecimal!
-  liquidity: BigDecimal!
   timestamp: Int!
+
+  totalSwapVolume: BigDecimal!
+  totalSwapFee: BigDecimal!
+  totalLiquidity: BigDecimal!
+  swapsCount: BigInt!
+  holdersCount: BigInt!
 }
 
 type Token @entity {

@@ -6,7 +6,6 @@ import {
   SwapEnabledSet,
 } from '../types/templates/LiquidityBootstrappingPool/LiquidityBootstrappingPool';
 import { ManagementFeePercentageChanged } from '../types/templates/InvestmentPool/InvestmentPool';
-import { TargetsSet } from '../types/templates/AaveLinearPool/AaveLinearPool';
 import {
   AmpUpdateStarted,
   AmpUpdateStopped,
@@ -61,8 +60,8 @@ export function handleGradualWeightUpdateScheduled(event: GradualWeightUpdateSch
   let weightUpdate = new GradualWeightUpdate(id);
   weightUpdate.poolId = poolId.toHexString();
   weightUpdate.scheduledTimestamp = event.block.timestamp.toI32();
-  weightUpdate.startTimestamp = event.params.startTime;
-  weightUpdate.endTimestamp = event.params.endTime;
+  weightUpdate.startTimestamp = event.params.startTime.toI32();
+  weightUpdate.endTimestamp = event.params.endTime.toI32();
   weightUpdate.startWeights = event.params.startWeights;
   weightUpdate.endWeights = event.params.endWeights;
   weightUpdate.save();
@@ -84,8 +83,8 @@ export function handleAmpUpdateStarted(event: AmpUpdateStarted): void {
   let ampUpdate = new AmpUpdate(id);
   ampUpdate.poolId = poolId.toHexString();
   ampUpdate.scheduledTimestamp = event.block.timestamp.toI32();
-  ampUpdate.startTimestamp = event.params.startTime;
-  ampUpdate.endTimestamp = event.params.endTime;
+  ampUpdate.startTimestamp = event.params.startTime.toI32();
+  ampUpdate.endTimestamp = event.params.endTime.toI32();
   ampUpdate.startAmp = event.params.startValue;
   ampUpdate.endAmp = event.params.endValue;
   ampUpdate.save();
@@ -103,8 +102,8 @@ export function handleAmpUpdateStopped(event: AmpUpdateStopped): void {
   let ampUpdate = new AmpUpdate(id);
   ampUpdate.poolId = poolId;
   ampUpdate.scheduledTimestamp = event.block.timestamp.toI32();
-  ampUpdate.startTimestamp = event.block.timestamp;
-  ampUpdate.endTimestamp = event.block.timestamp;
+  ampUpdate.startTimestamp = event.block.timestamp.toI32();
+  ampUpdate.endTimestamp = event.block.timestamp.toI32();
   ampUpdate.startAmp = event.params.currentValue;
   ampUpdate.endAmp = event.params.currentValue;
   ampUpdate.save();
@@ -147,25 +146,6 @@ export function handleManagementFeePercentageChanged(event: ManagementFeePercent
   let pool = Pool.load(poolId.toHexString()) as Pool;
 
   pool.managementFee = scaleDown(event.params.managementFeePercentage, 18);
-  pool.save();
-}
-
-/************************************
- ************* TARGETS **************
- ************************************/
-
-export function handleTargetsSet(event: TargetsSet): void {
-  let poolAddress = event.address;
-
-  // TODO - refactor so pool -> poolId doesn't require call
-  let poolContract = WeightedPool.bind(poolAddress);
-  let poolIdCall = poolContract.try_getPoolId();
-  let poolId = poolIdCall.value;
-
-  let pool = Pool.load(poolId.toHexString()) as Pool;
-
-  pool.lowerTarget = tokenToDecimal(event.params.lowerTarget, 18);
-  pool.upperTarget = tokenToDecimal(event.params.upperTarget, 18);
   pool.save();
 }
 
