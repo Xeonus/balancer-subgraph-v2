@@ -14,7 +14,7 @@ import {
   PriceRateProviderSet,
 } from '../types/templates/MetaStablePool/MetaStablePool';
 import { Pool, PriceRateProvider, GradualWeightUpdate, AmpUpdate } from '../types/schema';
-
+import { TargetsSet } from '../types/templates/AaveLinearPool/AaveLinearPool';
 import {
   tokenToDecimal,
   scaleDown,
@@ -147,6 +147,21 @@ export function handleManagementFeePercentageChanged(event: ManagementFeePercent
 
   pool.managementFee = scaleDown(event.params.managementFeePercentage, 18);
   pool.save();
+}
+
+	/************************************	
+ ************* TARGETS **************	
+ ************************************/	
+ export function handleTargetsSet(event: TargetsSet): void {	
+  let poolAddress = event.address;	
+  // TODO - refactor so pool -> poolId doesn't require call	
+  let poolContract = WeightedPool.bind(poolAddress);	
+  let poolIdCall = poolContract.try_getPoolId();	
+  let poolId = poolIdCall.value;	
+  let pool = Pool.load(poolId.toHexString()) as Pool;	
+  pool.lowerTarget = tokenToDecimal(event.params.lowerTarget, 18);	
+  pool.upperTarget = tokenToDecimal(event.params.upperTarget, 18);	
+  pool.save();	
 }
 
 /************************************
