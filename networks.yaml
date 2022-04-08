@@ -147,7 +147,7 @@ polygon:
   network: matic
   Vault:
     address: "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
-    startBlock: 15832990
+    startBlock: 25000000
   WeightedPoolFactory:
     address: "0x8E9aa87E45e92bad84D5F8DD1bff34Fb92637dE9"
     startBlock: 15832998

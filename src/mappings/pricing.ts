@@ -1,6 +1,7 @@
 import { Address, Bytes, BigInt, BigDecimal } from '@graphprotocol/graph-ts';
 import { Pool, TokenPrice, Balancer, PoolHistoricalLiquidity, LatestPrice } from '../types/schema';
-import { PRICING_ASSETS, USD_STABLE_ASSETS } from './helpers/constants';
+import { PRICING_ASSETS, USD_STABLE_ASSETS, ONE_BD } from './helpers/constants';
+import { hasVirtualSupply, PoolType } from './helpers/pools';
 import { getBalancerSnapshot, getToken, getTokenPriceId, loadPoolToken } from './helpers/misc';
 import { ZERO_BD } from './helpers/constants';
 
@@ -63,10 +64,27 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
       let token = getToken(tokenAddress);
       token.latestPrice = latestPrice.id;
       token.save();
+    } else if (pool.poolType == PoolType.StablePhantom) {
+      // try to estimate token price in terms of pricing asset
+      let pricingAssetInUSD = valueInUSD(ONE_BD, pricingAsset);
+      let currentTokenInUSD = valueInUSD(ONE_BD, tokenAddress);
+
+      if (pricingAssetInUSD.equals(ZERO_BD) || currentTokenInUSD.equals(ZERO_BD)) {
+        continue;
+      }
+
+      price = currentTokenInUSD.div(pricingAssetInUSD);
     }
 
-    let poolTokenValue = price.times(poolTokenQuantity);
-    poolValue = poolValue.plus(poolTokenValue);
+    // Exclude virtual supply from pool value
+    if (hasVirtualSupply(pool) && pool.address == tokenAddress) {
+      continue;
+    }
+
+    if (price) {
+      let poolTokenValue = price.times(poolTokenQuantity);
+      poolValue = poolValue.plus(poolTokenValue);
+    }
   }
 
   let oldPoolLiquidity: BigDecimal = pool.totalLiquidity;
