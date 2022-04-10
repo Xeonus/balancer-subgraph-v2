@@ -24,7 +24,7 @@ import {
 import { updatePoolWeights } from './helpers/weighted';
 import { isUSDStable, isPricingAsset, updatePoolLiquidity, valueInUSD } from './pricing';
 import { MIN_VIABLE_LIQUIDITY, ONE_BD, TokenBalanceEvent, ZERO, ZERO_BD } from "./helpers/constants";
-import { isStableLikePool, isVariableWeightPool } from './helpers/pools';
+import { hasVirtualSupply, isStableLikePool, isVariableWeightPool } from './helpers/pools';
 import { updateAmpFactor } from './helpers/stable';
 
 /************************************
@@ -137,6 +137,20 @@ function handlePoolJoined(event: PoolBalanceChanged): void {
       if (success) {
         break;
       }
+    }
+  }
+  // Update virtual supply
+  if (pool.poolType == 'StablePhantom') {
+    let maxTokenBalance = BigDecimal.fromString('5192296858534827.628530496329220095');
+    if (pool.totalShares.equals(maxTokenBalance)) {
+      let initialBpt = ZERO_BD;
+      for (let i: i32 = 0; i < tokenAddresses.length; i++) {
+        if (tokenAddresses[i] == pool.address) {
+          initialBpt = scaleDown(amounts[i], 18);
+        }
+      }
+      pool.totalShares = maxTokenBalance.minus(initialBpt);
+      pool.save();
     }
   }
 
@@ -273,6 +287,16 @@ export function handleSwapEvent(event: SwapEvent): void {
   } else if (isStableLikePool(pool)) {
     // Stablelike pools' amplification factors update over time so we need to update them after each swap
     updateAmpFactor(pool);
+  }
+
+  // Update virtual supply
+  if (hasVirtualSupply(pool)) {
+    if (event.params.tokenIn == pool.address) {
+      pool.totalShares = pool.totalShares.minus(tokenToDecimal(event.params.amountIn, 18));
+    }
+    if (event.params.tokenOut == pool.address) {
+      pool.totalShares = pool.totalShares.plus(tokenToDecimal(event.params.amountOut, 18));
+    }
   }
 
   let tokenInAddress: Address = event.params.tokenIn;
