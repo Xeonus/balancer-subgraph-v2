@@ -10,7 +10,7 @@ dataSources:
     source:
       address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8'
       abi: Vault
-      startBlock: 26500000
+      startBlock: 15832990
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -51,7 +51,7 @@ dataSources:
     source:
       address: '0x8E9aa87E45e92bad84D5F8DD1bff34Fb92637dE9'
       abi: WeightedPoolFactory
-      startBlock: 26500000
+      startBlock: 15832998
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -78,7 +78,7 @@ dataSources:
     source:
       address: '0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0'
       abi: WeightedPoolFactory
-      startBlock: 26500000
+      startBlock: 15869090
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -105,7 +105,7 @@ dataSources:
     source:
       address: '0xc66Ba2B6595D3613CCab350C886aCE23866EDe24'
       abi: StablePoolFactory
-      startBlock: 26500000
+      startBlock: 16138679
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -132,7 +132,7 @@ dataSources:
     source:
       address: '0xdAE7e32ADc5d490a43cCba1f0c736033F2b4eFca'
       abi: MetaStablePoolFactory
-      startBlock: 26500000
+      startBlock: 17913016
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -161,7 +161,7 @@ dataSources:
     source:
       address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE'
       abi: LiquidityBootstrappingPoolFactory
-      startBlock: 26500000
+      startBlock: 17116402
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -190,7 +190,7 @@ dataSources:
     source:
       address: '0x41B953164995c11C81DA73D212ED8Af25741b7Ac'
       abi: LiquidityBootstrappingPoolFactory
-      startBlock: 26500000
+      startBlock: 22067480
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -219,7 +219,7 @@ dataSources:
     source:
       address: '0x0f7bb7ce7b6ed9366F9b6B910AdeFE72dC538193'
       abi: InvestmentPoolFactory
-      startBlock: 26500000
+      startBlock: 19404118
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
