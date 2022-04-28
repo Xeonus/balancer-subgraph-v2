@@ -166,6 +166,17 @@ let linearUsdtAddressByNetwork: AddressByNetwork = {
   dev: '0x0000000000000000000000000000000000000000',
 };
 
+let linearStablePoolByNetwork: AddressByNetwork = {
+  mainnet: '0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb20000000000000000000000fe',
+  kovan: '0x0000000000000000000000000000000000000000',
+  goerli: '0x0000000000000000000000000000000000000000',
+  rinkeby: '0x0000000000000000000000000000000000000000',
+  polygon: '0x0000000000000000000000000000000000000000',
+  arbitrum: '0x0000000000000000000000000000000000000000',
+  dev: '0x0000000000000000000000000000000000000000',
+
+}
+
 function forNetwork(addressByNetwork: AddressByNetwork, network: string): Address {
   if (network == 'mainnet') {
     return Address.fromString(addressByNetwork.mainnet);
@@ -200,6 +211,9 @@ let LINEAR_DAI = forNetwork(linearDaiAddressByNetwork, network);
 let LINEAR_USDC = forNetwork(linearUsdcAddressByNetwork, network);
 let LINEAR_USDT = forNetwork(linearUsdtAddressByNetwork, network);
 
+//Boosted Linear Pool ID
+export let LINEAR_POOL_ID: string = '0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb20000000000000000000000fe';
+
 export let PRICING_ASSETS: Address[] = [
   WETH,
   WBTC,
@@ -215,3 +229,6 @@ export let PRICING_ASSETS: Address[] = [
   LINEAR_USDT,
 ];
 export let USD_STABLE_ASSETS: Address[] = [USDC, DAI, USDT, ALT_DAI, ALT_USDC, ALT_USDT];
+
+//Linear Boosted token maps
+export let USD_STABLE_LINEAR_BPTS: Address[] = [LINEAR_USDC, LINEAR_USDT, LINEAR_DAI];

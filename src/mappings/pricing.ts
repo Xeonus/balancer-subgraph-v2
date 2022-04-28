@@ -1,6 +1,6 @@
 import { Address, Bytes, BigInt, BigDecimal } from '@graphprotocol/graph-ts';
-import { Pool, TokenPrice, Balancer, PoolHistoricalLiquidity, LatestPrice } from '../types/schema';
-import { PRICING_ASSETS, USD_STABLE_ASSETS, ONE_BD } from './helpers/constants';
+import { Pool, TokenPrice, Balancer, PoolHistoricalLiquidity, LatestPrice, PoolToken } from '../types/schema';
+import { PRICING_ASSETS, USD_STABLE_ASSETS, ONE_BD, LINEAR_POOL_ID, USD_STABLE_LINEAR_BPTS } from './helpers/constants';
 import { hasVirtualSupply, PoolType } from './helpers/pools';
 import { createPoolSnapshot, getBalancerSnapshot, getToken, getTokenPriceId, loadPoolToken } from './helpers/misc';
 import { ZERO_BD } from './helpers/constants';
@@ -135,6 +135,13 @@ export function valueInUSD(value: BigDecimal, pricingAsset: Address): BigDecimal
 
   if (isUSDStable(pricingAsset)) {
     usdValue = value;
+  } else if (USD_STABLE_LINEAR_BPTS.includes(pricingAsset)) {
+  //Estimate bb-token price by obtaining the poolToken and assigning a price
+  let poolToken = PoolToken.load(LINEAR_POOL_ID.concat('-').concat(pricingAsset.toHexString()))
+  if (poolToken) {
+    usdValue = poolToken.priceRate.times(value);
+  }
+  
   } else {
     // convert to USD
     for (let i: i32 = 0; i < USD_STABLE_ASSETS.length; i++) {

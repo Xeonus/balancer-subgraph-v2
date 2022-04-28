@@ -10,7 +10,7 @@ dataSources:
     source:
       address: '0xBA12222222228d8Ba445958a75a0704d566BF2C8'
       abi: Vault
-      startBlock: 12272146
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -51,7 +51,7 @@ dataSources:
     source:
       address: '0x8E9aa87E45e92bad84D5F8DD1bff34Fb92637dE9'
       abi: WeightedPoolFactory
-      startBlock: 12272146
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -78,7 +78,7 @@ dataSources:
     source:
       address: '0xA5bf2ddF098bb0Ef6d120C98217dD6B141c74EE0'
       abi: WeightedPoolFactory
-      startBlock: 12272146
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -105,7 +105,7 @@ dataSources:
     source:
       address: '0xc66Ba2B6595D3613CCab350C886aCE23866EDe24'
       abi: StablePoolFactory
-      startBlock: 12703127
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -132,7 +132,7 @@ dataSources:
     source:
       address: '0x67d27634E44793fE63c467035E31ea8635117cd4'
       abi: MetaStablePoolFactory
-      startBlock: 13011941
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -161,7 +161,7 @@ dataSources:
     source:
       address: '0x751A0bC0e3f75b38e01Cf25bFCE7fF36DE1C87DE'
       abi: LiquidityBootstrappingPoolFactory
-      startBlock: 12871780
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -190,7 +190,7 @@ dataSources:
     source:
       address: '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e'
       abi: LiquidityBootstrappingPoolFactory
-      startBlock: 13730248
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -219,7 +219,7 @@ dataSources:
     source:
       address: '0x48767F9F868a4A7b86A90736632F6E44C2df7fa9'
       abi: InvestmentPoolFactory
-      startBlock: 13279079
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -248,7 +248,7 @@ dataSources:
     source:
       address: '0xb7561f547F3207eDb42A6AfA42170Cd47ADD17BD'
       abi: ConvergentPoolFactory
-      startBlock: 12686198
+      startBlock: 13766527
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5

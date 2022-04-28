@@ -408,7 +408,7 @@ export function handleSwapEvent(event: SwapEvent): void {
   let block = event.block.number;
   let tokenInWeight = poolTokenIn.weight;
   let tokenOutWeight = poolTokenOut.weight;
-  if (isPricingAsset(tokenInAddress) && pool.totalLiquidity.gt(MIN_VIABLE_LIQUIDITY)) {
+  if (isPricingAsset(tokenInAddress) && (pool.totalLiquidity.gt(MIN_VIABLE_LIQUIDITY) || pool.poolType === 'PhantomStable')) {
     let tokenPriceId = getTokenPriceId(poolId.toHex(), tokenOutAddress, tokenInAddress, block);
     let tokenPrice = new TokenPrice(tokenPriceId);
     //tokenPrice.poolTokenId = getPoolTokenId(poolId, tokenOutAddress);

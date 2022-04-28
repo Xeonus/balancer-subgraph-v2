@@ -178,6 +178,48 @@ export function handleNewCCPPool(event: PoolCreated): void {
   CCPoolTemplate.create(poolAddress);
 }
 
+export function handleNewLinearPool(event: PoolCreated): void {
+  let poolAddress: Address = event.params.pool;
+
+  let poolContract = AaveLinearPool.bind(poolAddress);
+
+  let poolIdCall = poolContract.try_getPoolId();
+  let poolId = poolIdCall.value;
+
+  let swapFeeCall = poolContract.try_getSwapFeePercentage();
+  let swapFee = swapFeeCall.value;
+
+  let pool = handleNewPool(event, poolId, swapFee);
+
+  pool.poolType = PoolType.Linear;
+  pool.factory = event.address;
+
+  let mainIndexCall = poolContract.try_getMainIndex();
+  pool.mainIndex = mainIndexCall.value.toI32();
+  let wrappedIndexCall = poolContract.try_getWrappedIndex();
+  pool.wrappedIndex = wrappedIndexCall.value.toI32();
+
+  let targetsCall = poolContract.try_getTargets();
+  pool.lowerTarget = tokenToDecimal(targetsCall.value.value0, 18);
+  pool.upperTarget = tokenToDecimal(targetsCall.value.value1, 18);
+
+  let vaultContract = Vault.bind(VAULT_ADDRESS);
+  let tokensCall = vaultContract.try_getPoolTokens(poolId);
+
+  if (!tokensCall.reverted) {
+    let tokens = tokensCall.value.value0;
+    pool.tokensList = changetype<Bytes[]>(tokens);
+
+    for (let i: i32 = 0; i < tokens.length; i++) {
+      createPoolTokenEntity(poolId.toHexString(), tokens[i]);
+    }
+  }
+  let maxTokenBalance = BigDecimal.fromString('5192296858534827.628530496329220095');
+  pool.totalShares = pool.totalShares.minus(maxTokenBalance);
+  pool.save();
+
+  LinearPoolTemplate.create(poolAddress);
+}
 
 function findOrInitializeVault(): Balancer {
   let vault: Balancer | null = Balancer.load('2');
