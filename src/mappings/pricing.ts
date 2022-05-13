@@ -49,6 +49,16 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
     if (tokenPrice) {
       //value in terms of priceableAsset
       price = tokenPrice.price;
+      //Stable Phantom pool tokens
+      if (pool.poolType == PoolType.StablePhantom) {
+        // try to estimate token price in terms of pricing asset
+        let pricingAssetInUSD = valueInUSD(ONE_BD, pricingAsset);
+        let currentTokenInUSD = valueInUSD(ONE_BD, tokenAddress);
+        if (pricingAssetInUSD.equals(ZERO_BD) || currentTokenInUSD.equals(ZERO_BD)) {
+          continue;
+        }
+        price = currentTokenInUSD.div(pricingAssetInUSD);
+      }
 
       // Possibly update latest price
       if (latestPrice == null) {
@@ -65,16 +75,6 @@ export function updatePoolLiquidity(poolId: string, block: BigInt, pricingAsset:
       let token = getToken(tokenAddress);
       token.latestPrice = latestPrice.id;
       token.save();
-    } else if (pool.poolType == PoolType.StablePhantom) {
-      // try to estimate token price in terms of pricing asset
-      let pricingAssetInUSD = valueInUSD(ONE_BD, pricingAsset);
-      let currentTokenInUSD = valueInUSD(ONE_BD, tokenAddress);
-
-      if (pricingAssetInUSD.equals(ZERO_BD) || currentTokenInUSD.equals(ZERO_BD)) {
-        continue;
-      }
-
-      price = currentTokenInUSD.div(pricingAssetInUSD);
     }
 
     // Exclude virtual supply from pool value
